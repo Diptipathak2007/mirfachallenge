@@ -1,10 +1,21 @@
 import 'dotenv/config';
 import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import fastifyCors from '@fastify/cors';
 import { encryptEnvelope, unwrapDEK, decryptPayload } from '@mirfa/crypto';
 import { store } from './storage.js';
 
 const fastify: FastifyInstance = Fastify({
   logger: true
+});
+
+// ============================================================================
+// CORS CONFIGURATION
+// ============================================================================
+// Allow frontend (localhost:3000) to make requests to API (localhost:3001)
+await fastify.register(fastifyCors, {
+  origin: ['http://localhost:3000'],
+  methods: ['GET', 'POST'],
+  credentials: true
 });
 
 // ============================================================================

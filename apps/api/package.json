@@ -9,13 +9,14 @@
         "build": "tsc"
     },
     "dependencies": {
-        "fastify": "latest",
+        "@fastify/cors": "^11.2.0",
         "@mirfa/crypto": "workspace:*",
-        "dotenv": "latest"
+        "dotenv": "latest",
+        "fastify": "latest"
     },
     "devDependencies": {
         "@types/node": "latest",
-        "typescript": "latest",
-        "tsx": "latest"
+        "tsx": "latest",
+        "typescript": "latest"
     }
 }
