@@ -46,8 +46,12 @@ export default function Home() {
   const [decryptLoading, setDecryptLoading] = useState(false);
   const [fetchedRecord, setFetchedRecord] = useState<EncryptedRecord | null>(null);
   const [decryptedPayload, setDecryptedPayload] = useState<unknown | null>(null);
-  
-  // Error state
+
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState<EncryptedRecord | null>(null);
+
+  // Messages
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -93,8 +97,10 @@ export default function Home() {
       }
       
       setEncryptedRecord(data);
-      setTxId(data.id);
-      setSuccess('Transaction encrypted and stored successfully');
+      setTxId(data.id); // Auto-fill for convenience
+      setSuccess('Encryption successful! Record stored securely.');
+      setModalContent(data);
+      setShowModal(true);
     } catch (err) {
       setError('Network error: Unable to connect to API');
     } finally {
@@ -208,12 +214,14 @@ export default function Home() {
           <h2 className="card-title">Encrypt & Store</h2>
           
           <div className="form-group">
-            <label htmlFor="partyId" className="label">Party ID</label>
+            <div className="label-row">
+              <label htmlFor="partyId" className="label">Party ID</label>
+            </div>
             <input
               id="partyId"
               type="text"
               className="input"
-              placeholder="e.g., user123"
+              placeholder="e.g., user_12345"
               value={partyId}
               onChange={(e) => setPartyId(e.target.value)}
               disabled={encryptLoading}
@@ -221,11 +229,19 @@ export default function Home() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="payload" className="label">JSON Payload</label>
+            <div className="label-row">
+              <label htmlFor="payload" className="label">JSON Payload</label>
+              <button 
+                className="label-action"
+                onClick={() => setPayloadJson('{\n  "amount": 5000,\n  "currency": "USD",\n  "description": "Confidential transfer",\n  "status": "pending"\n}')}
+              >
+                Load Example
+              </button>
+            </div>
             <textarea
               id="payload"
               className="textarea"
-              placeholder='{"secret": "data", "amount": 1000}'
+              placeholder={'{\n  "key": "value"\n}'}
               value={payloadJson}
               onChange={(e) => setPayloadJson(e.target.value)}
               disabled={encryptLoading}
@@ -244,18 +260,30 @@ export default function Home() {
           {/* ENCRYPTED RECORD DISPLAY */}
           {encryptedRecord ? (
             <div className="result-box">
-              <div className="result-header">
-                <span className="result-title">Encrypted Record</span>
-                <button
-                  className="button-copy"
-                  onClick={() => handleCopy(encryptedRecord.id)}
-                >
-                  Copy ID
-                </button>
+              <div className="result-summary">
+                <div className="summary-row">
+                  <span className="summary-label">Transaction ID</span>
+                  <span className="summary-value">{encryptedRecord.id.slice(0, 12)}...</span>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">Party ID</span>
+                  <span className="summary-value">{encryptedRecord.partyId}</span>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">Algorithm</span>
+                  <span className="summary-value">{encryptedRecord.alg}</span>
+                </div>
               </div>
-              <pre className="json-output">
-                {JSON.stringify(encryptedRecord, null, 2)}
-              </pre>
+              
+              <button 
+                className="button secondary view-btn"
+                onClick={() => {
+                  setModalContent(encryptedRecord);
+                  setShowModal(true);
+                }}
+              >
+                View Full Secure Record
+              </button>
             </div>
           ) : null}
         </section>
@@ -320,9 +348,52 @@ export default function Home() {
         </section>
       </div>
 
+      {/* MODAL */}
+      {showModal && modalContent && (
+        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Encrypted Record Details</h3>
+              <button 
+                className="close-btn"
+                onClick={() => setShowModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <pre className="json-output">
+                {JSON.stringify(modalContent, null, 2)}
+              </pre>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="button secondary" 
+                style={{ width: 'auto' }}
+                onClick={() => setShowModal(false)}
+              >
+                Close
+              </button>
+              <button 
+                className="button primary" 
+                style={{ width: 'auto' }}
+                onClick={() => {
+                  handleCopy(JSON.stringify(modalContent, null, 2));
+                  setSuccess('Full record copied to clipboard!');
+                }}
+              >
+                Copy JSON
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FOOTER */}
       <footer className="footer">
-        <p>Mirfa Secure Transactions • Professional Crypto Management</p>
+        <p>Mirfa Secure Transaction Vault • Enterprise Grade Security</p>
       </footer>
     </div>
   );
