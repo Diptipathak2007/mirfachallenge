@@ -9,7 +9,9 @@
         "build": "tsc"
     },
     "dependencies": {
-        "fastify": "latest"
+        "fastify": "latest",
+        "@mirfa/crypto": "workspace:*",
+        "dotenv": "latest"
     },
     "devDependencies": {
         "@types/node": "latest",
