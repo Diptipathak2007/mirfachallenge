@@ -2,9 +2,10 @@
     "name": "@mirfa/api",
     "version": "0.1.0",
     "private": true,
-    "main": "dist/index.js",
+    "type": "module",
+    "main": "dist/server.js",
     "scripts": {
-        "dev": "tsx watch src/index.ts",
+        "dev": "tsx watch src/server.ts",
         "build": "tsc"
     },
     "dependencies": {
