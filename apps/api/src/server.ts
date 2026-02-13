@@ -76,14 +76,20 @@ function validateAndGetMasterKey(): Buffer {
 }
 
 // Validate master key at startup
-// If this fails, the server won't start (fail-fast principle)
+// REFACTOR: Do NOT exit process on Vercel if key is missing. 
+// This allows OPTIONS requests to succeed even if config is wrong.
 let masterKey: Buffer;
 try {
-  masterKey = validateAndGetMasterKey();
-  fastify.log.info('Master key validated successfully');
+  // Only try to load if we are NOT in a build phase or if env is set
+  if (process.env.MASTER_KEY) {
+    masterKey = validateAndGetMasterKey();
+    fastify.log.info('Master key validated successfully');
+  } else {
+    fastify.log.warn('MASTER_KEY not set at startup - Crypto operations will fail');
+  }
 } catch (err: any) {
-  fastify.log.error({ error: err.message }, 'CRITICAL: Master key validation failed');
-  process.exit(1);
+  fastify.log.error({ error: err.message }, 'Master key validation failed');
+  // Do not process.exit(1) here for Serverless, let it fail in the route
 }
 
 // ============================================================================
@@ -165,6 +171,11 @@ fastify.post('/tx/encrypt', async (request: FastifyRequest<{ Body: EncryptReques
   // ENCRYPTION WITH ERROR HANDLING
   // ========================================
   try {
+    if (!masterKey) {
+       // Try to load one last time or throw
+       if (process.env.MASTER_KEY) masterKey = validateAndGetMasterKey();
+       else throw new Error('Configuration Error: MASTER_KEY is missing on server');
+    }
     const record = encryptEnvelope(partyId, payload, masterKey);
     store.set(record.id, record);
     
@@ -250,6 +261,10 @@ fastify.post('/tx/:id/decrypt', async (request: FastifyRequest<{ Params: { id: s
   // SAFE CRYPTO ERROR HANDLING
   // ========================================
   try {
+    if (!masterKey) {
+       if (process.env.MASTER_KEY) masterKey = validateAndGetMasterKey();
+       else throw new Error('Configuration Error: MASTER_KEY is missing on server');
+    }
     // Step 1: Unwrap the DEK using the master key
     const dek = unwrapDEK(record, masterKey);
     
