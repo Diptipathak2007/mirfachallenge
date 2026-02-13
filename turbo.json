@@ -1,5 +1,11 @@
 {
     "$schema": "https://turbo.build/schema.json",
+    "globalEnv": [
+        "MASTER_KEY",
+        "NEXT_PUBLIC_API_URL",
+        "CORS_ORIGIN",
+        "PORT"
+    ],
     "tasks": {
         "dev": {
             "cache": false,
