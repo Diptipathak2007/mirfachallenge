@@ -14,11 +14,11 @@
                 },
                 {
                     "key": "Access-Control-Allow-Headers",
-                    "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, Content-Type"
+                    "value": "X-Requested-With, Content-Type, Authorization, Accept, Origin"
                 },
                 {
-                    "key": "Access-Control-Max-Age",
-                    "value": "86400"
+                    "key": "Access-Control-Allow-Credentials",
+                    "value": "false"
                 }
             ]
         }
@@ -26,11 +26,11 @@
     "rewrites": [
         {
             "source": "/tx/(.*)",
-            "destination": "/api"
+            "destination": "/api/index"
         },
         {
             "source": "/",
-            "destination": "/api"
+            "destination": "/api/index"
         }
     ]
 }
