@@ -14,12 +14,12 @@
 [2K[1G[?25h [37m[1m [22m[39m Finalizing page optimization     [32m[1m✓[22m[39m Finalizing page optimization 
 
 [4mRoute (app)[24m                              [4mSize[24m     [4mFirst Load JS[24m
-┌ ○ /                                    142 B            [37m[1m87 kB[22m[39m
+┌ ○ /                                    1.92 kB        [37m[1m88.8 kB[22m[39m
 └ ○ /_not-found                          871 B          [37m[1m87.7 kB[22m[39m
-+ First Load JS shared by all            [37m[1m86.8 kB[22m[39m
-  ├ chunks/71ec73ba-5fd05f4979f8a013.js  53.6 kB
-  ├ chunks/963-ceda70f40338b743.js       31.3 kB
-  └ other shared chunks (total)          1.84 kB
++ First Load JS shared by all            [37m[1m86.9 kB[22m[39m
+  ├ chunks/71ec73ba-31eedb7be825c314.js  53.6 kB
+  ├ chunks/963-81165df9f8e67b56.js       31.3 kB
+  └ other shared chunks (total)          1.89 kB
 
 
 ○  (Static)  prerendered as static content

@@ -58,7 +58,8 @@ export default function Home() {
   // ------------------------------------------------------------------------
   // API BASE URL
   // ------------------------------------------------------------------------
-  const API_BASE = 'http://localhost:3001';
+  // Use environment variable in production, fallback to localhost for dev
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
   // ------------------------------------------------------------------------
   // HANDLER: ENCRYPT & SAVE

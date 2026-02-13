@@ -3,8 +3,9 @@ import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCors from '@fastify/cors';
 import { encryptEnvelope, unwrapDEK, decryptPayload } from '@mirfa/crypto';
 import { store } from './storage.js';
+import { fileURLToPath } from 'url';
 
-const fastify: FastifyInstance = Fastify({
+export const fastify: FastifyInstance = Fastify({
   logger: true
 });
 
@@ -12,8 +13,14 @@ const fastify: FastifyInstance = Fastify({
 // CORS CONFIGURATION
 // ============================================================================
 // Allow frontend (localhost:3000) to make requests to API (localhost:3001)
+// In production, we use the CORS_ORIGIN environment variable
+const allowedOrigins = ['http://localhost:3000'];
+if (process.env.CORS_ORIGIN) {
+  allowedOrigins.push(process.env.CORS_ORIGIN);
+}
+
 await fastify.register(fastifyCors, {
-  origin: ['http://localhost:3000'],
+  origin: allowedOrigins,
   methods: ['GET', 'POST'],
   credentials: true
 });
@@ -264,11 +271,17 @@ fastify.post('/tx/:id/decrypt', async (request: FastifyRequest<{ Params: { id: s
 // ============================================================================
 const start = async () => {
   try {
-    await fastify.listen({ port: 3001, host: '0.0.0.0' });
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+    await fastify.listen({ port, host: '0.0.0.0' });
+    fastify.log.info(`Server listening on port ${port}`);
   } catch (err) {
     fastify.log.error(err, 'Failed to start server');
     process.exit(1);
   }
 };
 
-start();
+// Only start server if run directly (not imported as a module)
+// This allows Vercel to import 'fastify' app without trying to bind to a port
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  start();
+}
