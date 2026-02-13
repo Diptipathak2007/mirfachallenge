@@ -14,20 +14,13 @@ export const fastify: FastifyInstance = Fastify({
 // ============================================================================
 // Allow frontend (localhost:3000) to make requests to API (localhost:3001)
 // In production, we use the CORS_ORIGIN environment variable
-// We also add specific Vercel domains as valid defaults to reduce configuration errors
-const allowedOrigins = [
-  'http://localhost:3000', 
-  'https://mirfa-web.vercel.app'
-];
-
-if (process.env.CORS_ORIGIN) {
-  allowedOrigins.push(process.env.CORS_ORIGIN);
-}
-
+// CRITICAL FIX: Use wildcard '*' to debug Vercel issues. 
+// If this works, we know it's purely an origin matching issue.
 await fastify.register(fastifyCors, {
-  origin: allowedOrigins,
-  methods: ['GET', 'POST'],
-  credentials: true
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false // Wildcard cannot be used with credentials: true
 });
 
 // ============================================================================
