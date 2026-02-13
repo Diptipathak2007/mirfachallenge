@@ -1,225 +1,132 @@
-# 🚀 Mirfa Software Engineer Intern Challenge
-## Secure Transactions Mini-App (Turbo + Fastify + Vercel)
+# �️ Mirfa Secure Transaction Vault
 
-Welcome 👋
-
-This is **not a coding test**.
-
-This challenge simulates a **real engineering task** you might receive on your first week at Mirfa.
-
-Instead of solving algorithm puzzles, you will:
-
-- structure a real monorepo
-- design an API
-- implement encryption correctly
-- deploy to production
-- explain your thinking
-
-If you enjoy building real systems end-to-end, you’ll probably enjoy this 🙂
+A professional-grade, full-stack monorepo demonstrating **Envelope Encryption** for secure transaction storage. Built for the Mirfa Software Engineer Intern Challenge.
 
 ---
 
-# 🎯 What we evaluate
+## 🔗 Live Deployment
 
-We care about:
-
-- problem solving
-- system design
-- clean code
-- correctness
-- debugging skills
-- deployment ability
-- ownership & clarity
-
-We **do NOT** care about:
-
-- fancy UI
-- perfect styling
-- trick algorithms
-- memorized LeetCode problems
+| Component | URL |
+| :--- | :--- |
+| **Frontend (Web)** | [https://mirfa-web.vercel.app](https://mirfa-web.vercel.app) |
+| **Backend (API)** | [https://mirfa-api.vercel.app](https://mirfa-api.vercel.app) |
 
 ---
 
-# ⏱ Timebox
+## 🏗️ System Architecture
 
-Expected effort: **6–10 hours total**
+This project is structured as a **Turborepo monorepo**, ensuring high modularity and efficient build pipelines.
 
-Deadline: **submit within 2–3 days**
+- **`apps/web`**: A premium Next.js frontend with a dark-themed, glassmorphic UI.
+- **`apps/api`**: A high-performance Fastify backend optimized for Vercel Serverless.
+- **`packages/crypto`**: A dedicated library for industrial-standard encryption logic.
 
-You may use:
-- Google
-- StackOverflow
-- ChatGPT / Claude / LLMs
-
-But you **must fully understand and explain your solution**.
-
-If you cannot explain it, we assume you did not build it.
-
----
-
-# 🧩 What you will build
-
-Create a **TurboRepo monorepo** containing:
-
-apps/web → Next.js frontend
-apps/api → Fastify backend
-packages/crypto → shared encryption logic
-
-
-The app should allow a user to:
-
-1. Enter a JSON payload + partyId
-2. Encrypt & store it
-3. Retrieve encrypted record
-4. Decrypt it back to original
-
-Think of this as a **mini secure transaction service**.
+### Tech Stack
+- **Mono-management**: pnpm Workspaces + Turborepo
+- **Frontend**: Next.js 15+, React, Vanilla CSS
+- **Backend**: Fastify, TypeScript
+- **Encryption**: Node.js `crypto` (AES-256-GCM)
+- **Deployment**: Vercel (Frontend & Serverless API)
+- **Testing**: Vitest
 
 ---
 
-# 🛠 Tech Requirements
+## � Security: Envelope Encryption (AES-256-GCM)
 
-Please use:
+The core requirement of this challenge was to implement **Envelope Encryption** correctly.
 
-- Node.js 20+
-- pnpm
-- TurboRepo
-- Fastify (API)
-- Next.js (Web)
-- TypeScript
-- Vercel deployment
+### How it works:
+1. **DEK Generation**: For every unique transaction, a random 32-byte **Data Encryption Key (DEK)** is generated.
+2. **Payload Encryption**: The sensitive data is encrypted using the DEK with **AES-256-GCM**.
+3. **DEK Wrapping**: The DEK is then encrypted ("wrapped") using a static **Master Key (MK)** stored securely in environment variables.
+4. **Storage**: The encrypted payload and the wrapped DEK are stored together in a single record.
 
-Project must run locally with:
-
-pnpm install
-pnpm dev
-
+### Why this is secure:
+- Even if the database is compromised, the data cannot be decrypted without the Master Key.
+- Rotating the Master Key only requires re-wrapping the DEKs, not re-encrypting the entire database.
+- **GCM (Galois/Counter Mode)** provides both encryption and **authentication** (integrity), ensuring data hasn't been tampered with.
 
 ---
 
-# 📦 Functional Requirements
+## 📦 Data Model
 
-## Backend (Fastify)
+Every stored transaction follows this strict interface:
 
-### POST `/tx/encrypt`
-
-Input:
-
-```json
-{
-  "partyId": "party_123",
-  "payload": { "amount": 100, "currency": "AED" }
+```typescript
+export type TxSecureRecord = {
+  id: string;           // UUID
+  partyId: string;      // User/Entity ID
+  createdAt: string;    // Timestamp
+  
+  // Encrypted Payload
+  payload_nonce: string;
+  payload_ct: string;
+  payload_tag: string;  // Integrity Tag
+  
+  // Wrapped DEK
+  dek_wrap_nonce: string;
+  dek_wrapped: string;
+  dek_wrap_tag: string;
+  
+  alg: "AES-256-GCM";
+  mk_version: 1;
 }
 ```
-Output: encrypted record
 
-### GET /tx/:id
+---
 
-Return stored encrypted record (no decrypt)
+## 🧪 Testing & Validation
 
-### POST /tx/:id/decrypt
-Return original decrypted payload
+We have implemented a comprehensive test suite using **Vitest** to ensure the crypto implementation is bulletproof.
 
-### Storage can be:
+### Verified Scenarios:
+- ✅ Successful **encrypt → decrypt** roundtrip.
+- ✅ Rejection of records with **tampered ciphertext**.
+- ✅ Rejection of records with **tampered integrity tags**.
+- ✅ Validation of **nonce lengths** and **hex formats**.
+- ✅ Handling of missing or invalid **Master Keys**.
 
-in-memory Map ✅ fine
+Run tests locally:
+```bash
+pnpm test
+```
 
-SQLite/Postgres ✅ bonus
+---
 
-### 💻 Frontend (Next.js)
-Single page is enough:
+## 🚀 Local Development
 
-input: partyId
+To run the entire system locally:
 
-textarea: JSON payload
+1. **Install Dependencies**:
+   ```bash
+   pnpm install
+   ```
 
-Encrypt & Save
+2. **Set Environment Variables**:
+   Create an `.env` file in `apps/api/` and `apps/web/`:
+   ```bash
+   # api/.env
+   MASTER_KEY=000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+   
+   # web/.env
+   NEXT_PUBLIC_API_URL=http://localhost:3001
+   ```
 
-Fetch
+3. **Start Development Server**:
+   ```bash
+   pnpm dev
+   ```
 
-Decrypt
+---
 
-show results
+## 🛠 Features & Improvements
 
-Keep it simple and clean.
+- **Premium UI**: Uses a high-end "Plura" aesthetic with a deep black theme and electric blue accents.
+- **Robust Deployment**: The API uses a custom serverless wrapper to ensure **CORS headers** are sent even during 500 errors or cold starts.
+- **Strict Validation**: All API inputs and cryptographic parameters are strictly validated to prevent malformed data entry.
+- **Error Transparency**: Implemented descriptive error handling for internal logic while keeping client-facing messages secure.
 
-### 🔐 Core Task — Encryption (Important)
-Implement Envelope Encryption using AES-256-GCM.
+---
 
-Steps
-Generate random DEK (32 bytes)
-
-Encrypt payload using DEK (AES-256-GCM)
-
-Wrap DEK using Master Key (AES-256-GCM)
-
-Store everything
-
-Binary values should be stored as hex strings.
-
-### 📦 Data Model
-export type TxSecureRecord = {
-  id: string
-  partyId: string
-  createdAt: string
-
-  payload_nonce: string
-  payload_ct: string
-  payload_tag: string
-
-  dek_wrap_nonce: string
-  dek_wrapped: string
-  dek_wrap_tag: string
-
-  alg: "AES-256-GCM"
-  mk_version: 1
-}
-#### ✅ Validation Rules
-Must reject if:
-
-nonce is not 12 bytes
-
-tag is not 16 bytes
-
-invalid hex
-
-ciphertext tampered
-
-tag tampered
-
-decryption fails
-
-🧪 Tests (optional)
-Write tests verifying:
-
-encrypt → decrypt works
-
-tampered ciphertext fails
-
-tampered tag fails
-
-wrong nonce length fails
-
-Minimum ~5 tests.
-
-#### 🚀 Deployment (required)
-Deploy BOTH:
-
-Web → Vercel
-
-API → Vercel
-
-Provide working URLs.
-
-#### 🎥 Loom Video (very important)
-Record a 2–3 minute walkthrough explaining:
-
-how Turbo is configured
-
-how encryption works
-
-how deployment works
-
-one bug you solved
-
-what you'd improve
+## 👨‍💻 Author
+**Dipti Pathak** - Mirfa Software Engineer Intern Challenge
