@@ -9,32 +9,12 @@ export const fastify: FastifyInstance = Fastify({
   logger: true
 });
 
-// ============================================================================
-// CORS CONFIGURATION
-// ============================================================================
-// Allow frontend (localhost:3000) to make requests to API (localhost:3001)
-// In production, we use the CORS_ORIGIN environment variable
-// CRITICAL FIX: Use wildcard '*' to debug Vercel issues. 
-// If this works, we know it's purely an origin matching issue.
-// In production, we use the CORS_ORIGIN environment variable
+// Standard CORS Configuration
 await fastify.register(fastifyCors, {
-  origin: true, // Reflect request origin (safest for debugging)
+  origin: '*', // Allow all for debugging, can be refined to process.env.CORS_ORIGIN
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-});
-
-// GLOBAL PREFLIGHT HANDLER (Manual Fix)
-// Vercel/Fastify sometimes swallows OPTIONS requests. This forces a response.
-fastify.options('/*', async (_request, reply) => {
-  return reply
-    .header('Access-Control-Allow-Origin', '*')
-    .header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    .header('Access-Control-Allow-Headers', 'Content-Type')
-    .status(204)
-    .send();
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: false // Set to false when using wildcard origin
 });
 
 // ============================================================================
