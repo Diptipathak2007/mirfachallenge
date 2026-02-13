@@ -14,7 +14,12 @@ export const fastify: FastifyInstance = Fastify({
 // ============================================================================
 // Allow frontend (localhost:3000) to make requests to API (localhost:3001)
 // In production, we use the CORS_ORIGIN environment variable
-const allowedOrigins = ['http://localhost:3000'];
+// We also add specific Vercel domains as valid defaults to reduce configuration errors
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'https://mirfa-web.vercel.app'
+];
+
 if (process.env.CORS_ORIGIN) {
   allowedOrigins.push(process.env.CORS_ORIGIN);
 }
