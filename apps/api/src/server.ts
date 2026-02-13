@@ -9,12 +9,12 @@ export const fastify: FastifyInstance = Fastify({
   logger: true
 });
 
-// Standard CORS Configuration
-await fastify.register(fastifyCors, {
-  origin: '*', // Allow all for debugging, can be refined to process.env.CORS_ORIGIN
+// Standard CORS Configuration (Sync-style registration)
+fastify.register(fastifyCors, {
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: false // Set to false when using wildcard origin
+  credentials: false
 });
 
 // ============================================================================
